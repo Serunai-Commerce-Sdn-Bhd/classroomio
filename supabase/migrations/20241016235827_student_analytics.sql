@@ -1,5 +1,6 @@
 create table "public"."analytics_login_events" (
-    "id" uuid not null default uuid_generate_v4(),
+    -- "id" uuid not null default uuid_generate_v4(),
+    "id" uuid not null default gen_random_uuid(),
     "user_id" uuid not null,
     "logged_in_at" timestamp with time zone default now()
 );

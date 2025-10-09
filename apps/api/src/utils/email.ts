@@ -18,7 +18,8 @@ export const nodemailerTransporter = async (): Promise<Transporter | null> => {
     const transporter = nodemailer.createTransport({
       host: env.SMTP_HOST,
       port: parseInt(env.SMTP_PORT || '465', 10),
-      secure: true,
+      // secure: true,
+      secure: false,
       auth: {
         user: env.SMTP_USER,
         pass: env.SMTP_PASSWORD
