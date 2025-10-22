@@ -6,6 +6,7 @@ import {
 
 import axios from 'axios';
 import { classroomio } from '$lib/utils/services/api';
+import { env } from '$env/dynamic/public';
 
 export type UploadType = 'document' | 'video' | 'generic';
 
@@ -72,6 +73,72 @@ export class GenericUploader {
     });
 
     return response.json();
+  }
+
+  async uploadToAzure(file: File){
+    try{
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch(`${env.PUBLIC_SERVER_URL}/course/azureUpload/upload`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      //check if backend returns any HTTP error
+      const data = await response.json();
+
+      if (!data.success){
+        return {
+          status: false,
+          message: data.message,
+        };
+      }
+      
+      return {status:true};
+    }
+    catch(error){
+      console.error("Error uploading to Azure Blob Storage: ", error);
+
+      //returns if there is a network error
+      return {
+        status: false,
+        message: error,
+      };
+    }
+  }
+
+  async listFromAzure(fileName){
+    try{
+
+      const response = await fetch(`${env.PUBLIC_SERVER_URL}/course/azureUpload/list`, {
+        method: 'POST',
+        body: fileName,
+      });
+
+      const data = await response.json();
+
+      if (!data.success){
+        return {
+          status: false,
+          message: data.message,
+        };
+      }
+      
+      return {
+        status:true,
+        file_url: data.file_url,
+      };
+    }
+    catch(error){
+      console.error("Error getting download link Azure Blob Storage: ", error);
+
+      return {
+        status: false,
+        message: error,
+      };
+    }
   }
 
   async uploadFile(params: { url: string; file: File }) {

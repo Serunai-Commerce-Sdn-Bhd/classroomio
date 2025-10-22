@@ -110,37 +110,83 @@
     $lessonDocUpload.isUploading = true;
 
     try {
-      const { url: presignedUrl, fileKey } = await documentUploader.getPresignedUrl(selectedFile);
+      //----------------------------Cloudflare R2 Storage------------------------------------------------
+      //presignedUrl is the url of the file location on cloudflare
+      //fileKey is the filename but after encoded.
+      // const { url: presignedUrl, fileKey } = await documentUploader.getPresignedUrl(selectedFile);
 
-      await documentUploader.uploadFile({
-        url: presignedUrl,
-        file: selectedFile
-      });
+      // await documentUploader.uploadFile({
+      //   url: presignedUrl,
+      //   file: selectedFile
+      // });
 
-      const { urls: presignedUrls } = await documentUploader.getDownloadPresignedUrl([fileKey]);
+      // const { urls: presignedUrls } = await documentUploader.getDownloadPresignedUrl([fileKey]);
 
-      const document = {
-        type: getFileType(selectedFile),
-        name: selectedFile.name,
-        link: presignedUrls[fileKey],
-        key: fileKey,
-        size: selectedFile.size
-      };
+      // const document = {
+      //   type: getFileType(selectedFile),
+      //   name: selectedFile.name,
+      //   link: presignedUrls[fileKey],
+      //   key: fileKey,
+      //   size: selectedFile.size
+      // };
 
-      lesson.update((state) => ({
-        ...state,
-        materials: {
-          ...(state.materials || {}),
-          documents: [...(state.materials.documents || []), document]
-        }
-      }));
-      lessonDocUpload.update((state) => ({
-        ...state,
-        uploadedDocument: document,
-        uploadProgress: 100
-      }));
+      // lesson.update((state) => ({
+      //   ...state,
+      //   materials: {
+      //     ...(state.materials || {}),
+      //     documents: [...(state.materials.documents || []), document]
+      //   }
+      // }));
+      // lessonDocUpload.update((state) => ({
+      //   ...state,
+      //   uploadedDocument: document,
+      //   uploadProgress: 100
+      // }));
 
-      snackbar.success($t('course.navItem.lessons.materials.tabs.document.upload_success'));
+      // snackbar.success($t('course.navItem.lessons.materials.tabs.document.upload_success'));
+      //----------------------------Cloudflare R2 Storage------------------------------------------------
+
+
+      //----------------------------Azure Blob Storage------------------------------------------------
+      // just upload to Azure no response is needed for now. Very straightforward
+      const upload = await documentUploader.uploadToAzure(selectedFile);
+
+      if (upload.status){
+
+        //the flow is, for every uploaded file, gets the link and update the state
+        // dont need to get all the download link.
+        const {file_url} = await documentUploader.listFromAzure(selectedFile.name);
+
+        const document = {
+          type: getFileType(selectedFile),
+          name: selectedFile.name,
+          // link: presignedUrls[fileKey],
+          // key: fileKey,
+          link: file_url,
+          key: 'Not Applicable',
+          size: selectedFile.size
+        };
+
+        lesson.update((state) => ({
+          ...state,
+          materials: {
+            ...(state.materials || {}),
+            documents: [...(state.materials.documents || []), document]
+          }
+        }));
+        lessonDocUpload.update((state) => ({
+          ...state,
+          uploadedDocument: document,
+          uploadProgress: 100
+        }));
+
+        snackbar.success($t('course.navItem.lessons.materials.tabs.document.upload_success'));
+      }
+      else{
+        snackbar.success($t(upload.message));
+      }
+
+      //----------------------------Azure Blob Storage------------------------------------------------
 
       // Reset after a short delay
       setTimeout(() => {
@@ -148,6 +194,7 @@
         selectedFile = null;
         if (fileInput) fileInput.value = '';
       }, 1500);
+      
     } catch (error) {
       console.error('Upload error:', error);
 
