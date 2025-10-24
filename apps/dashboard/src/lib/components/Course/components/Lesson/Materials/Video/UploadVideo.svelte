@@ -13,6 +13,7 @@
   import { t } from '$lib/utils/functions/translations';
 
   import { VideoUploader } from '$lib/utils/services/courses/presign';
+  import { fromPairs } from 'lodash';
 
   export let lessonId = '';
 
@@ -37,22 +38,50 @@
     fileName = videoFile?.name;
 
     try {
-      const { url: presignedUrl, fileKey } = await videoUploader.getPresignedUrl(videoFile);
+      //----------------------------Cloudflare R2 Storage------------------------------------------------
+      // const { url: presignedUrl, fileKey } = await videoUploader.getPresignedUrl(videoFile);
 
-      await videoUploader.uploadFile({
-        url: presignedUrl,
-        file: videoFile
-      });
+      // await videoUploader.uploadFile({
+      //   url: presignedUrl,
+      //   file: videoFile
+      // });
 
-      const { urls: presignedUrls } = await videoUploader.getDownloadPresignedUrl([fileKey]);
+      // const { urls: presignedUrls } = await videoUploader.getDownloadPresignedUrl([fileKey]);
 
-      formRes = {
-        url: presignedUrls[fileKey],
-        fileKey: fileKey,
-        status: 200
-      };
+      // formRes = {
+      //   url: presignedUrls[fileKey],
+      //   fileKey: fileKey,
+      //   status: 200
+      // };
 
-      $lesson.materials.videos = [
+      // $lesson.materials.videos = [
+      //   ...$lesson.materials.videos,
+      //   {
+      //     type: 'upload',
+      //     link: formRes.url,
+      //     key: formRes?.fileKey
+      //   }
+      // ];
+
+      // isLoaded = false;
+      //----------------------------Cloudflare R2 Storage------------------------------------------------
+
+      //----------------------------Azure Blob Storage-----------------------------------------------
+      const upload = await videoUploader.uploadToAzure(videoFile);
+
+      if (upload.status){
+
+        //the flow is, for every uploaded file, gets the link and update the state
+        // dont need to get all the download link.
+        const {file_url} = await videoUploader.listFromAzure(videoFile.name);
+
+        formRes = {
+          url: file_url,
+          fileKey: 'Not Applicable',
+          status: 200
+        };
+
+        $lesson.materials.videos = [
         ...$lesson.materials.videos,
         {
           type: 'upload',
@@ -62,6 +91,9 @@
       ];
 
       isLoaded = false;
+      }
+      
+      //----------------------------Azure Blob Storage-----------------------------------------------
     } catch (err: any) {
       console.error('Error uploading video', err, '\n\n', err.response);
 

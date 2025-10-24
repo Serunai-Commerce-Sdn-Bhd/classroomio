@@ -148,7 +148,6 @@
 
 
       //----------------------------Azure Blob Storage------------------------------------------------
-      // just upload to Azure no response is needed for now. Very straightforward
       const upload = await documentUploader.uploadToAzure(selectedFile);
 
       if (upload.status){

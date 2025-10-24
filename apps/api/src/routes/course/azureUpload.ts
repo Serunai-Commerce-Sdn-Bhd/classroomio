@@ -67,7 +67,7 @@ export const azureUploadRouter = new Hono()
         }
     )
     .post(
-        '/list',
+        '/getLink',
         async (c) => {
 
             try{
@@ -101,9 +101,6 @@ export const azureUploadRouter = new Hono()
 
                 // require update: change this to get only the just uploaded file not all file
                 const file_list = containerClient.getBlockBlobClient(file_name);
-                console.log("file_list: ", file_list);
-                console.log("file_list: ", file_list.name);
-                console.log("file_list_url: ", file_list.url);
 
                 return c.json({
                     success: true,

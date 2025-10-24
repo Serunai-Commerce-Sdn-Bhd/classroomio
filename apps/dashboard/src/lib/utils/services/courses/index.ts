@@ -283,33 +283,39 @@ export async function fetchLesson(lessonId: Lesson['id']) {
     .eq('id', lessonId)
     .single();
 
-  if (data) {
-    const videoKeys =
-      data.videos?.filter((video) => video.type === 'upload')?.map((video) => video.key) || [];
+  // console.log("supabase data: ", data);
 
-    const docKeys = data.documents?.map((doc) => doc.key) || [];
+  // if (data) {
+  //   const videoKeys =
+  //     data.videos?.filter((video) => video.type === 'upload')?.map((video) => video.key) || [];
+    
+  //   console.log("videoKeys: ", videoKeys);
 
-    try {
-      // Get presigned URLs for videos and documents
-      const genericUploader = new GenericUploader('generic');
+  //   const docKeys = data.documents?.map((doc) => doc.key) || [];
 
-      const urls = await genericUploader.getAllDownloadPresignedUrl(videoKeys, docKeys);
+  //   console.log("docKeys: ", docKeys);
 
-      data.videos = data.videos.map((video) => {
-        if (urls.videos[video.key]) {
-          video.link = urls.videos[video.key];
-        }
-        return video;
-      });
+  //   try {
+  //     // Get presigned URLs for videos and documents
+  //     const genericUploader = new GenericUploader('generic');
 
-      data.documents = data.documents.map((doc) => {
-        doc.link = urls.documents[doc.key];
-        return doc;
-      });
-    } catch (error) {
-      console.error('Error retrieving presigned assets (videos and documents):', error);
-    }
-  }
+  //     const urls = await genericUploader.getAllDownloadPresignedUrl(videoKeys, docKeys);
+
+  //     data.videos = data.videos.map((video) => {
+  //       if (urls.videos[video.key]) {
+  //         video.link = urls.videos[video.key];
+  //       }
+  //       return video;
+  //     });
+
+  //     data.documents = data.documents.map((doc) => {
+  //       doc.link = urls.documents[doc.key];
+  //       return doc;
+  //     });
+  //   } catch (error) {
+  //     console.error('Error retrieving presigned assets (videos and documents):', error);
+  //   }
+  // }
 
   return { data, error };
 }

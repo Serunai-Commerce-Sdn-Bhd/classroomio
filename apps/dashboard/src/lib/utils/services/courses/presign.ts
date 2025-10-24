@@ -112,7 +112,7 @@ export class GenericUploader {
   async listFromAzure(fileName){
     try{
 
-      const response = await fetch(`${env.PUBLIC_SERVER_URL}/course/azureUpload/list`, {
+      const response = await fetch(`${env.PUBLIC_SERVER_URL}/course/azureUpload/getLink`, {
         method: 'POST',
         body: fileName,
       });
